@@ -18,7 +18,7 @@ def train(config):
     Returns:
         None
     """
-    
+
     model_params = config.model.dict()
     ml_data_dir = config.ml_data_dir
     output_dir = config.output_dir
