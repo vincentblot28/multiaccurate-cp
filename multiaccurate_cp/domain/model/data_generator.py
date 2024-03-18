@@ -66,7 +66,7 @@ class AerialImageDataset(Dataset):
         return transformed["image"], transformed["mask"]
 
     def __getitem__(self, idx):
-        if self.split == "test":
+        if self.split in ["test", "cal"]:
             path_img = self.list_imgs_path[idx]
             filename = pathlib.Path(path_img).stem
             return self._load_img(path_img), filename
