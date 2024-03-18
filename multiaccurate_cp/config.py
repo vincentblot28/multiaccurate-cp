@@ -24,3 +24,12 @@ class TrainConfig(BaseModel):
     output_dir: str
     mean_RGB_values_path: str
     model: ModelConfig = ModelConfig()
+
+
+class InferConfig(BaseModel):
+    model_dir: str
+    model_name: str
+    data_dir: str
+    ml_set: str
+    output_dir: str
+    mean_RGB_values_path: str
