@@ -24,7 +24,6 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.eval()
-    thresholds = {}
     dataset = AerialImageDataset(images_dir=os.path.join(data_dir, ml_set, "images"), split=ml_set, mean=rgb_means)
     dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=0)
     with torch.no_grad():
@@ -36,13 +35,13 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
             for i in range(len(images)):
                 emb = embeddings[i, :, 0, 0].cpu().numpy()
                 pred = preds[i, 0].cpu().numpy()
-                if ml_set == "cal":
+                if ml_set == "res":
                     label = cv2.imread(
                         os.path.join(data_dir, ml_set, "labels", f"{image_names[i]}.tif"),
                         cv2.IMREAD_GRAYSCALE
                     )
                     threshold, recalls = get_threshold(pred, label)
-                    thresholds[image_names[i]] = {
+                    thresholds = {
                         "threshold": threshold.tolist(),
                         "recalls": recalls.tolist()
                     }
@@ -50,6 +49,7 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
                 np.save(os.path.join(output_dir, ml_set, "embeddings", f"{image_names[i]}.npy"), emb)
                 np.save(os.path.join(output_dir, ml_set, "pred_probas", f"{image_names[i]}.npy"), pred)
 
-    if ml_set == "cal":
-        with open(os.path.join(output_dir, ml_set, "thresholds.json"), "w") as f:
-            json.dump(thresholds, f, indent=4)
+                if ml_set == "res":
+                    os.path.join(data_dir, ml_set, "images")
+                    with open(os.path.join(output_dir, ml_set, "thresholds", f"{image_names[i]}.json"), "w") as f:
+                        json.dump(thresholds, f, indent=4)
