@@ -47,7 +47,7 @@ def write_patches(data_path, patch_size, pad_size, overlap):
             label_patches = create_patches(padded_label, patch_size, overlap)
 
             for ix, iy in it.product(range(image_patches.shape[0]), range(image_patches.shape[1])):
-                ptc_name = img_name + f"_ptc_{str(ix).zfill(2)}_{str(iy).zfill(2)}"
+                ptc_name = img_name.split(".")[0] + f"_ptc_{str(ix).zfill(2)}_{str(iy).zfill(2)}"
                 image_patch = image_patches[ix, iy]
                 label_patch = label_patches[ix, iy]
                 if not os.path.exists(os.path.join(data_path, "02_prepared_data", ml_set, "images")):
@@ -59,13 +59,12 @@ def write_patches(data_path, patch_size, pad_size, overlap):
                         "images", ptc_name + ".tif"
                     ), image_patch
                 )
-                if ml_set != "res":
-                    cv2.imwrite(
-                        os.path.join(
-                            data_path, "02_prepared_data", ml_set,
-                            "labels", ptc_name + ".tif"
-                        ), label_patch
-                    )
+                cv2.imwrite(
+                    os.path.join(
+                        data_path, "02_prepared_data", ml_set,
+                        "labels", ptc_name + ".tif"
+                    ), label_patch
+                )
 
     rgb_means = np.array([np.mean(mean_R), np.mean(mean_G), np.mean(mean_B)])
     np.save(os.path.join(data_path, "01_raw_images", "rgb_means.npy"), rgb_means)
