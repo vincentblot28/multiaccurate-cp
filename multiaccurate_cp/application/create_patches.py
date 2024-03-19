@@ -11,6 +11,7 @@ from utils.filename_utils import get_image_set
 
 TEST_NUMBER = 5
 CAL_NUMBER = 31
+RES_NUMBER = 34
 PERCENTAGE_VAL = .2
 
 
@@ -35,7 +36,7 @@ def write_patches(data_path, patch_size, pad_size, overlap):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             label = cv2.imread(os.path.join(data_path, "01_raw_images", "gt", img_name), cv2.IMREAD_GRAYSCALE)
             padded_img, padded_label = pad_image_and_label(img, label, pad_size)
-            ml_set = get_image_set(img_name, TEST_NUMBER, CAL_NUMBER, PERCENTAGE_VAL)
+            ml_set = get_image_set(img_name, TEST_NUMBER, CAL_NUMBER, RES_NUMBER, PERCENTAGE_VAL)
 
             if ml_set == "train":
                 mean_R.append(padded_img.mean(axis=0).mean(axis=0)[0])
@@ -58,12 +59,13 @@ def write_patches(data_path, patch_size, pad_size, overlap):
                         "images", ptc_name + ".tif"
                     ), image_patch
                 )
-                cv2.imwrite(
-                    os.path.join(
-                        data_path, "02_prepared_data", ml_set,
-                        "labels", ptc_name + ".tif"
-                    ), label_patch
-                )
+                if ml_set != "res":
+                    cv2.imwrite(
+                        os.path.join(
+                            data_path, "02_prepared_data", ml_set,
+                            "labels", ptc_name + ".tif"
+                        ), label_patch
+                    )
 
     rgb_means = np.array([np.mean(mean_R), np.mean(mean_G), np.mean(mean_B)])
     np.save(os.path.join(data_path, "01_raw_images", "rgb_means.npy"), rgb_means)

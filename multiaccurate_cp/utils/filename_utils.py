@@ -10,7 +10,7 @@ def find_image_number(img_name):
         return int(re.findall(r"\d", city_name)[0])
 
 
-def get_image_set(img_name, test_number, cal_number, percentage_val):
+def get_image_set(img_name, test_number, cal_number, res_number, percentage_val):
     """
     Determines the set (train, val, calibration and test) for a given image
     based its number.
@@ -24,11 +24,15 @@ def get_image_set(img_name, test_number, cal_number, percentage_val):
     Returns:
     str: The machine learning set for the image. Possible values are "test", "cal", "val", or "train".
     """
+    assert cal_number < res_number, "cal_number must be less than res_number"
     image_number = find_image_number(img_name)
     if image_number <= test_number:
         ml_set = "test"
     elif image_number >= cal_number:
-        ml_set = "cal"
+        if image_number < res_number:
+            ml_set = "cal"
+        else:
+            ml_set = "res"
     else:
         if random.random() < percentage_val:
             ml_set = "val"
