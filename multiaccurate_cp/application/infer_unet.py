@@ -1,8 +1,6 @@
 import glob
-import json
 import os
 
-import cv2
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -10,7 +8,6 @@ from tqdm import tqdm
 
 from domain.model.data_generator import AerialImageDataset
 from domain.model.unet import Unet
-from utils.ml_utils import get_threshold
 
 
 def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_path):
@@ -35,21 +32,6 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
             for i in range(len(images)):
                 emb = embeddings[i, :, 0, 0].cpu().numpy()
                 pred = preds[i, 0].cpu().numpy()
-                if ml_set == "res":
-                    label = cv2.imread(
-                        os.path.join(data_dir, ml_set, "labels", f"{image_names[i]}.tif"),
-                        cv2.IMREAD_GRAYSCALE
-                    )
-                    threshold, recalls = get_threshold(pred, label)
-                    thresholds = {
-                        "threshold": threshold.tolist(),
-                        "recalls": recalls.tolist()
-                    }
 
                 np.save(os.path.join(output_dir, ml_set, "embeddings", f"{image_names[i]}.npy"), emb)
                 np.save(os.path.join(output_dir, ml_set, "pred_probas", f"{image_names[i]}.npy"), pred)
-
-                if ml_set == "res":
-                    os.path.join(data_dir, ml_set, "images")
-                    with open(os.path.join(output_dir, ml_set, "thresholds", f"{image_names[i]}.json"), "w") as f:
-                        json.dump(thresholds, f, indent=4)
