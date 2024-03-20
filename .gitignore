@@ -5,3 +5,4 @@ data/*
 poetry.lock
 pyproject.toml
 *.pyc
+notebooks/*
