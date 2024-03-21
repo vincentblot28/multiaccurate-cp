@@ -82,7 +82,7 @@ class ResidualDataset(Dataset):
 
     def __init__(
             self, images_dir, labels_dir=None, pred_probas_dir=None,
-            target_recall=.9, mode="train", mean=[0., 0., 0.], debug=False,
+            target_recall=.9, mode="train", mean=[0., 0., 0.], return_img_path=False,
             model_input="images"
     ):
         self.model_input = model_input
@@ -92,7 +92,7 @@ class ResidualDataset(Dataset):
             self.list_masks_path = sorted(glob.glob(os.path.join(labels_dir, "*.tif")))
             self._check_alignement(self.list_images_path, self.list_masks_path)
         self.mode = mode
-        self.debug = debug
+        self.return_img_path = return_img_path
         self.target_recall = target_recall
         self.std = [1., 1., 1.]
         self.mean = [0., 0., 0.]
@@ -147,7 +147,7 @@ class ResidualDataset(Dataset):
     def _load_input_and_th(self, path_images, path_mask, path_pred_probas):
         path_embeddings = path_pred_probas.replace("pred_probas", "embeddings")
         model_input = self._load_input(path_images, path_pred_probas, path_embeddings)
-        label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY)
+        label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY) / 255
         pred_probas = np.load(path_pred_probas)
         if np.sum(label) == 0:
             threshold = 1
@@ -167,7 +167,7 @@ class ResidualDataset(Dataset):
             self.list_masks_path[idx],
             self.list_pred_probas_path[idx]
         )
-        if self.debug:
+        if self.return_img_path:
             return self._load_input_and_th(path_input, path_mask, path_pred_probas), path_input
         else:
             return self._load_input_and_th(path_input, path_mask, path_pred_probas)
