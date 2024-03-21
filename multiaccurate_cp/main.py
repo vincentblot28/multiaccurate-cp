@@ -3,8 +3,8 @@
 from clidantic import Parser
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from application import create_patches, train_unet, infer_unet
-from config import InferConfig, PatchesConfig, TrainConfig
+from application import create_patches, train_unet, infer_unet, train_resnet
+from config import InferUnetConfig, PatchesConfig, TrainResConfig, TrainUnetConfig
 
 cli = Parser()
 
@@ -20,12 +20,12 @@ def prepare(patches_config: PatchesConfig):
 
 
 @cli.command()
-def train(train_config: TrainConfig):
+def train_segmentation(train_config: TrainUnetConfig):
     return train_unet.train(config=train_config)
 
 
 @cli.command()
-def infer(infer_config: InferConfig):
+def infer(infer_config: InferUnetConfig):
     return infer_unet.infer(
         infer_config.model_dir,
         infer_config.model_name,
@@ -34,6 +34,11 @@ def infer(infer_config: InferConfig):
         infer_config.output_dir,
         infer_config.mean_RGB_values_path
     )
+
+
+@cli.command()
+def train_residual(train_config: TrainResConfig):
+    return train_resnet.train(config=train_config)
 
 
 if __name__ == '__main__':
