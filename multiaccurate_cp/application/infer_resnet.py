@@ -30,7 +30,7 @@ def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set):
         models_dir[0], resnet=config["model"]["resnet"], model_input=config["model"]["model_input"],
         embedding_size=config["model"]["embedding_size"], target_recall=config["model"]["target_recall"]
     )
-    model.model.fc = nn.Sequential(*[model.model.fc[i] for i in range(3)])
+    model.model.fc = nn.Sequential(*[model.model.fc[i] for i in range(len(model.model.fc) - 1)])
 
     if not os.path.exists(os.path.join(pred_proba_dir, ml_set, "res_embeddings", model_name)):
         os.makedirs(os.path.join(pred_proba_dir, ml_set, "res_embeddings", model_name))
