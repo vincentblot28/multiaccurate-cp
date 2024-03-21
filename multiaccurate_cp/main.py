@@ -3,8 +3,8 @@
 from clidantic import Parser
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from application import create_patches, train_unet, infer_unet, train_resnet
-from config import InferUnetConfig, PatchesConfig, TrainResConfig, TrainUnetConfig
+from application import create_patches, train_unet, infer_unet, train_resnet, infer_resnet
+from config import InferResConfig, InferUnetConfig, PatchesConfig, TrainResConfig, TrainUnetConfig
 
 cli = Parser()
 
@@ -39,6 +39,17 @@ def infer(infer_config: InferUnetConfig):
 @cli.command()
 def train_residual(train_config: TrainResConfig):
     return train_resnet.train(config=train_config)
+
+
+@cli.command()
+def infer_residual(infer_config: InferResConfig):
+    return infer_resnet.infer(
+        infer_config.model_dir,
+        infer_config.model_name,
+        infer_config.data_dir,
+        infer_config.pred_proba_dir,
+        infer_config.ml_set,
+    )
 
 
 if __name__ == '__main__':

@@ -53,3 +53,11 @@ class TrainResConfig(BaseModel):
     output_dir: str
     mean_RGB_values_path: str
     model: ResnetConfig = ResnetConfig()
+
+
+class InferResConfig(BaseModel):
+    model_dir: str
+    model_name: str
+    data_dir: str
+    pred_proba_dir: str
+    ml_set: str
