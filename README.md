@@ -31,3 +31,14 @@ $ python multiaccurate_cp/main.py infer --model-dir=data/03_model_weights/unet -
 ```
 $ python multiaccurate_cp/main.py train-residual --ml-data-dir=data/02_prepared_data --probas-dir=data/04_predictions --output-dir=data/03_model_weights/resnet --mean-RGB-values-path=data/01_raw_images/rgb_means.npy --model.resnet=resnet50 --model.model-input=image_and_probas
 ```
+
+# Inference residual
+## Calibration data
+```
+$ python multiaccurate_cp/main.py infer-residual --model-dir=data/03_model_weights/resnet --model-name=20240321_1625 --data-dir=data/02_prepared_data --pred-proba-dir=data/04_predictions --ml-set=cal
+```
+
+## Test data
+```
+$ python multiaccurate_cp/main.py infer-residual --model-dir=data/03_model_weights/resnet --model-name=20240321_1625 --data-dir=data/02_prepared_data --pred-proba-dir=data/04_predictions --ml-set=test
+```
