@@ -9,27 +9,47 @@ class PatchesConfig(BaseModel):
     overlap: Optional[int] = 92
 
 
-class ModelConfig(BaseModel):
+class UnetConfig(BaseModel):
     initial_filters_nb: int = 32
     dropout_rate: float = 0.1
     epochs: int = 100
     lr: float = 0.001
     batch_size: int = 40
     num_workers: int = 8
-    patience: int = 100
+    patience: int = 20
 
 
-class TrainConfig(BaseModel):
+class TrainUnetConfig(BaseModel):
     ml_data_dir: str
     output_dir: str
     mean_RGB_values_path: str
-    model: ModelConfig = ModelConfig()
+    model: UnetConfig = UnetConfig()
 
 
-class InferConfig(BaseModel):
+class InferUnetConfig(BaseModel):
     model_dir: str
     model_name: str
     data_dir: str
     ml_set: str
     output_dir: str
     mean_RGB_values_path: str
+
+
+class ResnetConfig(BaseModel):
+    resnet: str = "resnet18"
+    embedding_size: int = 256
+    target_recall: float = 0.9
+    model_input: str = "images"
+    lr: float = 0.0001
+    batch_size: int = 40
+    num_workers: int = 8
+    patience: int = 20
+    epochs: int = 100
+
+
+class TrainResConfig(BaseModel):
+    ml_data_dir: str
+    probas_dir: str
+    output_dir: str
+    mean_RGB_values_path: str
+    model: ResnetConfig = ResnetConfig()
