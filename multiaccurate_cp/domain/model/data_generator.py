@@ -5,6 +5,7 @@ import pathlib
 import albumentations as A
 import cv2
 import numpy as np
+import torch
 from albumentations.pytorch.transforms import ToTensorV2
 from torch.utils.data import Dataset
 from tqdm.auto import tqdm
@@ -68,7 +69,7 @@ class AerialImageDataset(Dataset):
         return transformed["image"], transformed["mask"]
 
     def __getitem__(self, idx):
-        if self.mode in ["test", "cal", "res"]:
+        if self.split in ["test", "cal", "res"]:
             path_img = self.list_imgs_path[idx]
             filename = pathlib.Path(path_img).stem
             return self._load_img(path_img), filename
@@ -130,7 +131,9 @@ class ResidualDataset(Dataset):
             model_input = cv2.cvtColor(cv2.imread(path_input_images), cv2.COLOR_BGR2RGB)
             return self.transform(image=model_input)["image"]
         elif self.model_input == "probas":
-            return np.load(path_input_probas)
+            probas = np.load(path_input_probas)[:, :, np.newaxis]
+            probas = np.transpose(probas, (2, 0, 1))
+            return probas
         elif self.model_input == "embeddings":
             return np.load(path_input_embeddings)
         elif self.model_input == "image_and_probas":
@@ -139,7 +142,7 @@ class ResidualDataset(Dataset):
             input2 = np.load(path_input_probas)[:, :, np.newaxis]
             input2 = np.transpose(input2, (2, 0, 1))
             model_input = np.concatenate([input1_trfm, input2], axis=0)
-            return model_input
+            return torch.tensor(model_input)
 
     def _load_input_and_th(self, path_images, path_mask, path_pred_probas):
         path_embeddings = path_pred_probas.replace("pred_probas", "embeddings")
