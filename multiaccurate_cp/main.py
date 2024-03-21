@@ -43,7 +43,7 @@ def train_residual(train_config: TrainResConfig):
 
 @cli.command()
 def infer_residual(infer_config: InferResConfig):
-    return infer_resnet.infer(
+    return infer_resnet.infer_resnet(
         infer_config.model_dir,
         infer_config.model_name,
         infer_config.data_dir,

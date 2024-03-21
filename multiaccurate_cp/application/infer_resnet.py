@@ -32,12 +32,14 @@ def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set):
     )
     model.model.fc = nn.Sequential(*[model.model.fc[i] for i in range(3)])
 
+    if not os.path.exists(os.path.join(pred_proba_dir, ml_set, "res_embeddings", model_name)):
+        os.makedirs(os.path.join(pred_proba_dir, ml_set, "res_embeddings", model_name))
     for (model_input, _), img_path in tqdm(ds):
         embedding = model(torch.tensor(model_input[np.newaxis, ...]).to("cuda")).cpu().detach().numpy()[0, :]
         np.save(
             os.path.join(
                 pred_proba_dir, ml_set,
-                "res_embeddings",
+                "res_embeddings", model_name,
                 os.path.basename(img_path).replace(".tif", ".npy")
             ),
             embedding
