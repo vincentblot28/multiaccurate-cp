@@ -3,8 +3,8 @@
 from clidantic import Parser
 from tqdm.contrib.logging import logging_redirect_tqdm
 
-from application import create_patches, train_unet, infer_unet, train_resnet, infer_resnet
-from config import InferResConfig, InferUnetConfig, PatchesConfig, TrainResConfig, TrainUnetConfig
+from application import create_patches, train_unet, infer_unet, train_resnet, infer_resnet, infer_pranet
+from config import InferPolypConfig, InferResConfig, InferUnetConfig, PatchesConfig, TrainResConfig, TrainUnetConfig
 
 cli = Parser()
 
@@ -49,6 +49,16 @@ def infer_residual(infer_config: InferResConfig):
         infer_config.data_dir,
         infer_config.pred_proba_dir,
         infer_config.ml_set,
+    )
+
+
+@cli.command()
+def infer_polyp(infer_polyp: InferPolypConfig):
+    return infer_pranet.infer(
+        infer_polyp.model_dir,
+        infer_polyp.data_dir,
+        infer_polyp.ml_set,
+        infer_polyp.output_dir,
     )
 
 

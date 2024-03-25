@@ -61,3 +61,10 @@ class InferResConfig(BaseModel):
     data_dir: str
     pred_proba_dir: str
     ml_set: str
+
+
+class InferPolypConfig(BaseModel):
+    model_dir: str
+    data_dir: str
+    ml_set: str
+    output_dir: str

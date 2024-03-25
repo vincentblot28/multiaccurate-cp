@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import torch
 from albumentations.pytorch.transforms import ToTensorV2
+from PIL import Image
 from torch.utils.data import Dataset
 from tqdm.auto import tqdm
 
@@ -171,3 +172,46 @@ class ResidualDataset(Dataset):
             return self._load_input_and_th(path_input, path_mask, path_pred_probas), path_input
         else:
             return self._load_input_and_th(path_input, path_mask, path_pred_probas)
+
+
+class PolypDataset(Dataset):
+    def __init__(self, image_root, testsize=352):
+        self.testsize = testsize
+        self.images = [
+            os.path.join(image_root, f) for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')
+        ]
+        self.images = sorted(self.images)
+        self.transform = A.Compose([
+            A.Resize(self.testsize, self.testsize),
+            A.Normalize(
+                [0.485, 0.456, 0.406],
+                [0.229, 0.224, 0.225]
+            ),
+            ToTensorV2(),
+        ])
+        self.size = len(self.images)
+
+    def __len__(self):
+        return self.size
+
+    def load_data(self, index):
+        image = self.rgb_loader(self.images[index])
+        img_shape = image.shape
+        image = self.transform(image=image)["image"]
+        name = self.images[index].split('/')[-1]
+        if name.endswith('.jpg'):
+            name = name.split('.jpg')[0] + '.png'
+        return image, name, img_shape
+
+    def rgb_loader(self, path):
+        with open(path, 'rb') as f:
+            img = Image.open(f)
+            return np.array(img.convert('RGB'))
+
+    def binary_loader(self, path):
+        with open(path, 'rb') as f:
+            img = Image.open(f)
+            return img.convert('L')
+
+    def __getitem__(self, index):
+        return self.load_data(index)
