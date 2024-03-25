@@ -6,3 +6,5 @@ poetry.lock
 pyproject.toml
 *.pyc
 notebooks/*
+old_data/*
+._*
