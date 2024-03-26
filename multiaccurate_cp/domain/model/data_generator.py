@@ -83,33 +83,38 @@ class ResidualDataset(Dataset):
 
     def __init__(
             self, images_dir, labels_dir=None, pred_probas_dir=None,
-            target_recall=.9, mode="train", mean=[0., 0., 0.], return_img_path=False,
-            model_input="images"
+            target_recall=.9, mode="train",
+            mean=[0., 0., 0.], return_img_path=False,
+            model_input="images", polyp=False
     ):
         self.model_input = model_input
         self.list_pred_probas_path = sorted(glob.glob(os.path.join(pred_probas_dir, "*.npy")))
-        self.list_images_path = sorted(glob.glob(os.path.join(images_dir, "*.tif")))
+        self.list_images_path = sorted(glob.glob(os.path.join(images_dir, "*")))
         if labels_dir is not None:
-            self.list_masks_path = sorted(glob.glob(os.path.join(labels_dir, "*.tif")))
+            self.list_masks_path = sorted(glob.glob(os.path.join(labels_dir, "*")))
             self._check_alignement(self.list_images_path, self.list_masks_path)
         self.mode = mode
         self.return_img_path = return_img_path
         self.target_recall = target_recall
         self.std = [1., 1., 1.]
         self.mean = [0., 0., 0.]
+        self.polyp = polyp
+        self.polyp_size = 352
         if mean is not None:
             self.mean = [i/255. for i in mean]
-        if self.mode == "train":
+        else:
+            self.mean = [0.485, 0.456, 0.406]
+            self.std = [0.229, 0.224, 0.225]
+
+        if not self.polyp:
             self.transform = A.Compose([
-                # A.Flip(p=0.5),
-                # A.RandomRotate90(p=0.5),
                 A.Normalize(mean=self.mean, std=self.std),
                 ToTensorV2()
             ])
-
         else:
             self.transform = A.Compose([
                 A.Normalize(mean=self.mean, std=self.std),
+                A.Resize(self.polyp_size, self.polyp_size),
                 ToTensorV2()
             ])
 
@@ -127,7 +132,7 @@ class ResidualDataset(Dataset):
     def get_label_path(self, idx):
         return self.list_masks_path[idx]
 
-    def _load_input(self, path_input_images, path_input_probas, path_input_embeddings):
+    def _load_input(self, path_input_images, path_input_probas):
         if self.model_input == "images":
             model_input = cv2.cvtColor(cv2.imread(path_input_images), cv2.COLOR_BGR2RGB)
             return self.transform(image=model_input)["image"]
@@ -135,21 +140,21 @@ class ResidualDataset(Dataset):
             probas = np.load(path_input_probas)[:, :, np.newaxis]
             probas = np.transpose(probas, (2, 0, 1))
             return probas
-        elif self.model_input == "embeddings":
-            return np.load(path_input_embeddings)
         elif self.model_input == "image_and_probas":
             input1 = cv2.cvtColor(cv2.imread(path_input_images), cv2.COLOR_BGR2RGB)
             input1_trfm = self.transform(image=input1)["image"]
-            input2 = np.load(path_input_probas)[:, :, np.newaxis]
+            input2 = np.load(path_input_probas)
+            input2 = cv2.resize(input2, (input1_trfm.shape[2], input1_trfm.shape[1]))[:, :, np.newaxis]
             input2 = np.transpose(input2, (2, 0, 1))
             model_input = np.concatenate([input1_trfm, input2], axis=0)
             return torch.tensor(model_input)
 
     def _load_input_and_th(self, path_images, path_mask, path_pred_probas):
-        path_embeddings = path_pred_probas.replace("pred_probas", "embeddings")
-        model_input = self._load_input(path_images, path_pred_probas, path_embeddings)
+
+        model_input = self._load_input(path_images, path_pred_probas)
         label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY) / 255
         pred_probas = np.load(path_pred_probas)
+
         if np.sum(label) == 0:
             threshold = 1
         else:

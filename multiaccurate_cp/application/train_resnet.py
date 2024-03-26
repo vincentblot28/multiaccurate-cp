@@ -24,7 +24,11 @@ def train(config):
     probas_dir = config.probas_dir
     output_dir = config.output_dir
     mean_RGB_values_path = config.mean_RGB_values_path
-    mean_RGB_values = np.load(mean_RGB_values_path)
+    polyp = config.polyp
+    if mean_RGB_values_path is not None:
+        mean_RGB_values = np.load(mean_RGB_values_path)
+    else:
+        mean_RGB_values = None
 
     train_images_dir = os.path.join(ml_data_dir, "res/images")
     train_labels_dir = os.path.join(ml_data_dir, "res/labels")
@@ -49,7 +53,8 @@ def train(config):
         mean=mean_RGB_values,
         train_batch_size=model_params["batch_size"],
         val_batch_size=model_params["batch_size"],
-        num_workers=model_params["num_workers"]
+        num_workers=model_params["num_workers"],
+        polyp=polyp
     )
 
     pl.utilities.model_summary.summarize(model)

@@ -51,8 +51,9 @@ class TrainResConfig(BaseModel):
     ml_data_dir: str
     probas_dir: str
     output_dir: str
-    mean_RGB_values_path: str
+    mean_RGB_values_path: str = None
     model: ResnetConfig = ResnetConfig()
+    polyp: bool = False
 
 
 class InferResConfig(BaseModel):
@@ -61,6 +62,7 @@ class InferResConfig(BaseModel):
     data_dir: str
     pred_proba_dir: str
     ml_set: str
+    polyp: bool = True
 
 
 class InferPolypConfig(BaseModel):

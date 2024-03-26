@@ -23,13 +23,16 @@ g.manual_seed(42)
 
 class Resnet(pl.LightningModule):
 
-    def __init__(self, resnet, embedding_size, target_recall, model_input, lr=1e-3,
+    def __init__(self, resnet, embedding_size, target_recall,
+                 model_input, lr=1e-3,
                  train_images_dir="./", train_labels_dir="./", train_probas_dir="./",
-                 mean=(0., 0., 0.), train_batch_size=10, val_batch_size=10, num_workers=8, return_embeddings=False):
+                 mean=(0., 0., 0.), train_batch_size=10, val_batch_size=10,
+                 num_workers=8, return_embeddings=False, polyp=False):
         super().__init__()
         self.model_input = model_input
         self.target_recall = target_recall
         self.model = torch.hub.load('pytorch/vision:v0.9.0', resnet, pretrained=True)
+        self.polyp = polyp
         old_fc = self.model.fc
         old_fc_size = old_fc.weight.shape[1]
         if old_fc_size > embedding_size:
@@ -99,7 +102,8 @@ class Resnet(pl.LightningModule):
             self.train_probas_dir,
             self.target_recall,
             mode="train", mean=self.mean,
-            model_input=self.model_input
+            model_input=self.model_input,
+            polyp=self.polyp
         )
         train_set_size = int(0.8 * len(full_dataset))
         valid_set_size = len(full_dataset) - train_set_size
@@ -119,7 +123,8 @@ class Resnet(pl.LightningModule):
             self.train_probas_dir,
             self.target_recall,
             mode="train", mean=self.mean,
-            model_input=self.model_input
+            model_input=self.model_input,
+            polyp=self.polyp
         )
         train_set_size = int(0.8 * len(full_dataset))
         valid_set_size = len(full_dataset) - train_set_size

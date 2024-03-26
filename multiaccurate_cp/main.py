@@ -49,6 +49,7 @@ def infer_residual(infer_config: InferResConfig):
         infer_config.data_dir,
         infer_config.pred_proba_dir,
         infer_config.ml_set,
+        infer_config.polyp
     )
 
 

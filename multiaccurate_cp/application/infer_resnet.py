@@ -11,7 +11,7 @@ from domain.model.data_generator import ResidualDataset
 from domain.model.resnet import Resnet
 
 
-def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set):
+def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set, polyp=False):
     file_path = os.path.join(models_dir, model_name, "config.yaml")
 
     # Read the YAML file
@@ -24,11 +24,12 @@ def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set):
         target_recall=config["model"]["target_recall"],
         return_img_path=True,
         model_input=config["model"]["model_input"],
+        polyp=polyp
     )
     models_dir = glob.glob(os.path.join(models_dir, model_name, "checkpoints", "*.ckpt"))
     model = Resnet.load_from_checkpoint(
         models_dir[0], resnet=config["model"]["resnet"], model_input=config["model"]["model_input"],
-        embedding_size=config["model"]["embedding_size"], target_recall=config["model"]["target_recall"]
+        embedding_size=config["model"]["embedding_size"], target_recall=config["model"]["target_recall"], polyp=polyp
     )
     model.model.fc = nn.Sequential(*[model.model.fc[i] for i in range(len(model.model.fc) - 1)])
 
@@ -40,7 +41,7 @@ def infer_resnet(models_dir, model_name, data_dir, pred_proba_dir, ml_set):
             os.path.join(
                 pred_proba_dir, ml_set,
                 "res_embeddings", model_name,
-                os.path.basename(img_path).replace(".tif", ".npy")
+                os.path.basename(img_path).split(".")[0] + ".npy"
             ),
             embedding
         )
