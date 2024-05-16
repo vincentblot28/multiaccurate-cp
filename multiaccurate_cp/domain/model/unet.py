@@ -80,7 +80,7 @@ class UnetModule(nn.Module):
         self.pool9 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.bottleneck = UnetModule.conv_block(
-            features*8, features*16, kernel_size=ks,
+            features*8, features*8, kernel_size=ks,
             dropout=dropout, layer_name="bottleneck"
         )
         self.upconv9 = nn.ConvTranspose2d(
@@ -158,12 +158,12 @@ class UnetModule(nn.Module):
         encoder6 = self.encoder6(self.pool5(encoder5))  # 17x17
         encoder7 = self.encoder7(self.pool6(encoder6))  # 8x8
         encoder8 = self.encoder8(self.pool7(encoder7))  # 4x4
-        encoder9 = self.encoder9(self.pool8(encoder8))  # 2x2
+        # encoder9 = self.encoder9(self.pool8(encoder8))  # 2x2
 
-        bottleneck = self.bottleneck(self.pool4(encoder9))
+        bottleneck = self.bottleneck(self.pool4(encoder8))
 
-        decoder9 = self.decode(encoder9, bottleneck, self.decoder9, self.upconv9)
-        decoder8 = self.decode(encoder8, decoder9, self.decoder8, self.upconv8)
+        # decoder9 = self.decode(encoder9, bottleneck, self.decoder9, self.upconv9)
+        decoder8 = self.decode(encoder8, bottleneck, self.decoder8, self.upconv8)
         decoder7 = self.decode(encoder7, decoder8, self.decoder7, self.upconv7)
         decoder6 = self.decode(encoder6, decoder7, self.decoder6, self.upconv6)
         decoder5 = self.decode(encoder5, decoder6, self.decoder5, self.upconv5)

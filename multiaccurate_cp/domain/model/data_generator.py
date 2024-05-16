@@ -18,9 +18,10 @@ class AerialImageDataset(Dataset):
 
     def __init__(self, images_dir, labels_dir=None, split="train", mean=[0., 0., 0.]):
 
-        self.list_imgs_path = sorted(glob.glob(os.path.join(images_dir, "*.tif")))
+        self.list_imgs_path = sorted(glob.glob(os.path.join(images_dir, "*.[jpt][pni][gfg]")))
+
         if labels_dir is not None:
-            self.list_masks_path = sorted(glob.glob(os.path.join(labels_dir, "*.tif")))
+            self.list_masks_path = sorted(glob.glob(os.path.join(labels_dir, "*.[jpt][pni][gfg]")))
             self._check_alignement(self.list_imgs_path, self.list_masks_path)
         self.split = split
 
@@ -63,8 +64,9 @@ class AerialImageDataset(Dataset):
     def _load_img_and_mask(self, path_img, path_mask):
         img = cv2.cvtColor(cv2.imread(path_img), cv2.COLOR_BGR2RGB)
         mask = cv2.imread(path_mask, cv2.IMREAD_UNCHANGED)
-        mask = np.where(mask == 255, 1, 0)  # convert building pixels from 255 to 1
-
+        mask = np.where(mask > 0, 1, 0).astype(np.uint8)  # convert building pixels from 255 to 1
+        img = cv2.resize(img, (256, 256))
+        mask = cv2.resize(mask, (256, 256))
         transformed = self.transform(image=img, mask=mask)
 
         return transformed["image"], transformed["mask"]

@@ -32,6 +32,9 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
             for i in range(len(images)):
                 emb = embeddings[i, :, 0, 0].cpu().numpy()
                 pred = preds[i, 0].cpu().numpy()
+                if not os.path.exists(os.path.join(output_dir, ml_set, "embeddings")):
+                    os.makedirs(os.path.join(output_dir, ml_set, "embeddings"))
+                    os.makedirs(os.path.join(output_dir, ml_set, "pred_probas"))
 
                 np.save(os.path.join(output_dir, ml_set, "embeddings", f"{image_names[i]}.npy"), emb)
                 np.save(os.path.join(output_dir, ml_set, "pred_probas", f"{image_names[i]}.npy"), pred)

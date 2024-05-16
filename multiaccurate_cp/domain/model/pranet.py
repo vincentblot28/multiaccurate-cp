@@ -142,6 +142,8 @@ class PraNet(nn.Module):
         ra5_feat = self.agg1(x4_rfb, x3_rfb, x2_rfb)
         lateral_map_5 = F.interpolate(ra5_feat, scale_factor=8, mode='bilinear')
 
+        embedding = ra5_feat.reshape(ra5_feat.shape[0], ra5_feat.shape[-1] ** 2)
+
         # ---- reverse attention branch_4 ----
         crop_4 = F.interpolate(ra5_feat, scale_factor=0.25, mode='bilinear')
         x = -1*(torch.sigmoid(crop_4)) + 1
@@ -176,4 +178,4 @@ class PraNet(nn.Module):
         x = ra2_feat + crop_2
         lateral_map_2 = F.interpolate(x, scale_factor=8, mode='bilinear')
 
-        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2
+        return lateral_map_5, lateral_map_4, lateral_map_3, lateral_map_2, embedding

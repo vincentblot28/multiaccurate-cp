@@ -50,18 +50,18 @@ def write_patches(data_path, patch_size, pad_size, overlap):
                 ptc_name = img_name.split(".")[0] + f"_ptc_{str(ix).zfill(2)}_{str(iy).zfill(2)}"
                 image_patch = image_patches[ix, iy]
                 label_patch = label_patches[ix, iy]
-                if not os.path.exists(os.path.join(data_path, "02_prepared_data", ml_set, "images")):
-                    os.makedirs(os.path.join(data_path, "02_prepared_data", ml_set, "images"))
-                    os.makedirs(os.path.join(data_path, "02_prepared_data", ml_set, "labels"))
+                if not os.path.exists(os.path.join(data_path, "02_prepared_data_small", ml_set, "images")):
+                    os.makedirs(os.path.join(data_path, "02_prepared_data_small", ml_set, "images"))
+                    os.makedirs(os.path.join(data_path, "02_prepared_data_small", ml_set, "labels"))
                 cv2.imwrite(
                     os.path.join(
-                        data_path, "02_prepared_data", ml_set,
+                        data_path, "02_prepared_data_small", ml_set,
                         "images", ptc_name + ".tif"
                     ), image_patch
                 )
                 cv2.imwrite(
                     os.path.join(
-                        data_path, "02_prepared_data", ml_set,
+                        data_path, "02_prepared_data_small", ml_set,
                         "labels", ptc_name + ".tif"
                     ), label_patch
                 )
