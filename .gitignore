@@ -5,6 +5,15 @@ data/*
 poetry.lock
 pyproject.toml
 *.pyc
-notebooks/*
 old_data/*
 ._*
+fire/*
+*.zip
+38*/
+Lung*
+notebooks/old/*
+annotations/*
+val2014/*
+*.npy
+*.pdf
+*.png
