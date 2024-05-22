@@ -12,8 +12,13 @@ fire/*
 38*/
 Lung*
 notebooks/old/*
+notebooks/trials/*
 annotations/*
 val2014/*
 *.npy
 *.pdf
 *.png
+!teaser.png
+*mlp.py 
+*positive.py
+*old.md
