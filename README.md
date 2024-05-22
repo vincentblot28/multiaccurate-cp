@@ -83,30 +83,3 @@ $ python multiaccurate_cp/main.py train-residual --ml-data-dir=data/$DATASET/02_
 ```bash
 $ python multiaccurate_cp/main.py infer-residual --model-dir=data/$DATASET/03_model_weights/resnet --model-name=$MODEL_NAME --data-dir=data/$DATASET/02_prepared_data --pred-proba-dir=data/$DATASET/04_predictions --ml-set=$ML_SET
 ```
-
-## Test data
-```
-$ python multiaccurate_cp/main.py infer-residual --model-dir=data/aerial/03_model_weights/resnet --model-name=20240322_1039 --data-dir=data/aerial/02_prepared_data --pred-proba-dir=data/aerial/04_predictions --ml-set=test
-```
-
-# Inference PraNet
-```
-$ python multiaccurate_cp/main.py infer-polyp --data-dir=data/polyp/02_prepared_data --output-dir=data/polyp/04_predictions/ --model-dir=data/polyp/03_model_weights/pranet ml-set=res
-```
-
-# Train residual for Polyps
-
-```
-$ python multiaccurate_cp/main.py train-residual --ml-data-dir=data/polyp/02_prepared_data --probas-dir=data/polyp/04_predictions --output-dir=data/polyp/03_model_weights/resnet --model.resnet=resnet50 --model.model-input=image_and_probas --model.embedding-size=1024 --polyp
-```
-
-# Inference residual polyp
-## Calibration data
-```
-$ python multiaccurate_cp/main.py infer-residual --model-dir=data/polyp/03_model_weights/resnet --model-name=20240325_1057 --data-dir=data/polyp/02_prepared_data --pred-proba-dir=data/polyp/04_predictions --ml-set=cal
-```
-
-## Test data
-```
-$ python multiaccurate_cp/main.py infer-residual --model-dir=data/aerial/03_model_weights/resnet --model-name=20240325_1057 --data-dir=data/polyp/02_prepared_data --pred-proba-dir=data/polyp/04_predictions --ml-set=test
-```
