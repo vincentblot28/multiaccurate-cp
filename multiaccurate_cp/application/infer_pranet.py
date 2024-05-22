@@ -29,10 +29,9 @@ def infer(model_dir, data_dir, ml_set, output_dir):
             images = batch[0].to(device)
             image_names = batch[1]
             image_shapes = batch[2]
-            _, _, _, preds, embeddings = model(images)
+            _, _, _, preds = model(images)
             for i in range(len(images)):
                 pred = preds[i, 0].cpu().numpy()
-                embedding = embeddings[i, 0].cpu().numpy()
                 pred = cv2.resize(pred, (int(image_shapes[1][i]), int(image_shapes[0][i])))
                 pred = torch.sigmoid(torch.tensor(pred) / 10).numpy()
                 np.save(
@@ -40,10 +39,4 @@ def infer(model_dir, data_dir, ml_set, output_dir):
                         output_dir, ml_set, "pred_probas",
                         f"{image_names[i].split('.')[0]}.npy"
                     ), pred
-                )
-                np.save(
-                    os.path.join(
-                        output_dir, ml_set, "embeddings",
-                        f"{image_names[i].split('.')[0]}.npy"
-                    ), embedding
                 )
