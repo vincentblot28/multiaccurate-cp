@@ -22,13 +22,13 @@ def infer(model_dir, model_name, data_dir, ml_set, output_dir, mean_RGB_values_p
     model.to(device)
     model.eval()
     dataset = AerialImageDataset(images_dir=os.path.join(data_dir, ml_set, "images"), split=ml_set, mean=rgb_means)
-    dataloader = DataLoader(dataset, batch_size=20, shuffle=False, num_workers=0)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=0)
     with torch.no_grad():
         for batch in tqdm(dataloader):
             images = batch[0].to(device)
             image_names = batch[1]
             preds, embeddings = model(images)
-            preds = torch.sigmoid(preds)
+            preds = torch.sigmoid(preds / 2)
             for i in range(len(images)):
                 emb = embeddings[i, :, 0, 0].cpu().numpy()
                 pred = preds[i, 0].cpu().numpy()

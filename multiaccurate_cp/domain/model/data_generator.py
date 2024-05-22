@@ -137,6 +137,7 @@ class ResidualDataset(Dataset):
     def _load_input(self, path_input_images, path_input_probas):
         if self.model_input == "images":
             model_input = cv2.cvtColor(cv2.imread(path_input_images), cv2.COLOR_BGR2RGB)
+            model_input = cv2.resize(model_input, (256, 256))
             return self.transform(image=model_input)["image"]
         elif self.model_input == "probas":
             probas = np.load(path_input_probas)[:, :, np.newaxis]
@@ -154,7 +155,10 @@ class ResidualDataset(Dataset):
     def _load_input_and_th(self, path_images, path_mask, path_pred_probas):
 
         model_input = self._load_input(path_images, path_pred_probas)
-        label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY) / 255
+        if "npy" in path_mask:
+            label = np.load(path_mask)
+        else:
+            label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY) / 255
         pred_probas = np.load(path_pred_probas)
 
         if np.sum(label) == 0:
