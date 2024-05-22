@@ -83,3 +83,32 @@ $ python multiaccurate_cp/main.py train-residual --ml-data-dir=data/$DATASET/02_
 ```bash
 $ python multiaccurate_cp/main.py infer-residual --model-dir=data/$DATASET/03_model_weights/resnet --model-name=$MODEL_NAME --data-dir=data/$DATASET/02_prepared_data --pred-proba-dir=data/$DATASET/04_predictions --ml-set=$ML_SET
 ```
+
+⚡ Theta optimization quickstart
+===============
+
+
+```python
+from scipy.optimize import minimize
+
+from multiaccurate_cp.utils.multiaccurate import J, J_prime
+
+ALPHA = .1
+N = len(cal_labels)
+
+lambda_ridge = .01
+optimal_theta = minimize(
+    J, np.random.uniform(0, 1, RESNET_EMBEDDING_SIZE),
+    method="SLSQP",
+    args=(
+        cal_labels,
+        cal_pred_probas,
+        cal_emb,
+        ALPHA,
+        N,
+        regularization="ridge",
+        lambda_ridge
+    ), jac=J_prime,
+    options={"disp": True, "maxiter": 1000}, tol=1e-10
+)
+```
