@@ -85,10 +85,11 @@ class ResidualDataset(Dataset):
 
     def __init__(
             self, images_dir, labels_dir=None, pred_probas_dir=None,
-            target_recall=.9, mode="train",
+            target_recall=.9, input_size="keep", mode="train",
             mean=[0., 0., 0.], return_img_path=False,
             model_input="images", polyp=False
-    ):
+    ):  
+        self.input_size = input_size
         self.model_input = model_input
         self.list_pred_probas_path = sorted(glob.glob(os.path.join(pred_probas_dir, "*.npy")))
         self.list_images_path = sorted(glob.glob(os.path.join(images_dir, "*")))
@@ -145,11 +146,14 @@ class ResidualDataset(Dataset):
             return probas
         elif self.model_input == "image_and_probas":
             input1 = cv2.cvtColor(cv2.imread(path_input_images), cv2.COLOR_BGR2RGB)
+            if self.input_size != "keep":
+                input1 = cv2.resize(input1, (self.input_size, self.input_size))
             input1_trfm = self.transform(image=input1)["image"]
             input2 = np.load(path_input_probas)
             input2 = cv2.resize(input2, (input1_trfm.shape[2], input1_trfm.shape[1]))[:, :, np.newaxis]
             input2 = np.transpose(input2, (2, 0, 1))
             model_input = np.concatenate([input1_trfm, input2], axis=0)
+
             return torch.tensor(model_input)
 
     def _load_input_and_th(self, path_images, path_mask, path_pred_probas):
@@ -183,6 +187,48 @@ class ResidualDataset(Dataset):
             return self._load_input_and_th(path_input, path_mask, path_pred_probas), path_input
         else:
             return self._load_input_and_th(path_input, path_mask, path_pred_probas)
+
+
+class JOptimDataset(ResidualDataset):
+
+    def __init__(
+            self, images_dir, labels_dir=None, pred_probas_dir=None,
+            target_recall=.9, input_size="keep", mode="train",
+            mean=[0., 0., 0.],
+    ):
+        super().__init__(
+            images_dir, labels_dir, pred_probas_dir,
+            target_recall, input_size, mode, mean, return_img_path=False,
+            model_input="image_and_probas", polyp=False
+        )
+
+    def _load_input_and_mask(self, path_images, path_mask, path_pred_probas):
+
+        model_input = self._load_input(path_images, path_pred_probas)
+        if "npy" in path_mask:
+            label = np.load(path_mask)
+        else:
+            label = cv2.imread(path_mask, cv2.COLOR_BGR2GRAY) / 255
+        if self.input_size != "keep":
+            label = cv2.resize(label, (self.input_size, self.input_size))
+        return model_input, label
+
+    def __getitem__(self, idx):
+        if self.mode in ["test", "cal"]:
+            path_input = self.list_images_path[idx]
+            filename = pathlib.Path(path_input).stem
+            return self._load_input(path_input), filename
+
+        path_input, path_mask, path_pred_probas = (
+            self.list_images_path[idx],
+            self.list_masks_path[idx],
+            self.list_pred_probas_path[idx]
+        )
+        if self.return_img_path:
+            return self._load_input_and_mask(path_input, path_mask, path_pred_probas), path_input
+        else:
+            return self._load_input_and_mask(path_input, path_mask, path_pred_probas)
+
 
 
 class PolypDataset(Dataset):
@@ -226,3 +272,5 @@ class PolypDataset(Dataset):
 
     def __getitem__(self, index):
         return self.load_data(index)
+
+
