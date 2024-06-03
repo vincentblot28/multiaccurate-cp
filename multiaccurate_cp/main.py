@@ -25,7 +25,7 @@ def train_segmentation(train_config: TrainUnetConfig):
 
 
 @cli.command()
-def infer(infer_config: InferUnetConfig):
+def infer_unet(infer_config: InferUnetConfig):
     return infer_unet.infer(
         infer_config.model_dir,
         infer_config.model_name,
