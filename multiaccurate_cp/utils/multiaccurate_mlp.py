@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 
 import numpy as np
-import torch
+from scipy import integrate
 
 
 INF_BORN_INT = 100
@@ -9,8 +9,8 @@ INF_BORN_INT = 100
 
 def _I_prime(y, y_pred, u, alpha, n):
     if y_pred.ndim == 2:
-        y_pred_th = (y_pred[:, :, None] > u)
-        loss = 1 - (y_pred_th * y[:, :, None]).sum(axis=(0, 1)) / y.sum()
+        y_pred_th = (y_pred[:, :, np.newaxis] > u).astype(int)
+        loss = 1 - (y_pred_th * y[:, :, np.newaxis]).sum(axis=(0, 1)) / y.sum()
     else:
         y_pred_th = (y_pred > u[:, np.newaxis, np.newaxis]).astype(int)
         loss = 1 - (y_pred_th * y).sum(axis=(1, 2)) / y.sum(axis=(1, 2))
@@ -37,13 +37,14 @@ def _I_prime_list(y, y_pred, u, alpha, n):
 def _integrate_i(y_i, y_pred_i, us_i, alpha, n):
     if us_i <= 0:
         return - (INF_BORN_INT + us_i) * (alpha - 1 / n)  # - us_i * (alpha - 1 / n)
-    to_integrate = torch.zeros(101, requires_grad=False)
-    for u in range(101):
-        to_integrate[u] += _I_prime(y_i, y_pred_i, u * us_i / 100, alpha, n)[0]
-    return torch.trapz(to_integrate)
+    return integrate.fixed_quad(
+            lambda theta_prime: _I_prime_list(y_i, y_pred_i, theta_prime, alpha, n),
+            0, us_i, n=100
+        )[0] - (INF_BORN_INT * (alpha - 1 / n))
 
 
-def _I_vec_multi_proc2(y, y_pred, us, alpha, n):
+def _I_vec_multi_proc2(y, y_pred, pred_th, alpha, n):
+    us = np.maximum(pred_th, - INF_BORN_INT)
     if us.max() <= 0:
         return - (INF_BORN_INT + us) * (alpha - 1 / n)
     else:
@@ -53,44 +54,17 @@ def _I_vec_multi_proc2(y, y_pred, us, alpha, n):
         return integrals
 
 
-def _I_vec_multi_proc(y, y_pred, us, alpha, n):
-    us = torch.maximum(us, - torch.tensor(INF_BORN_INT))
+def _I_vec_multi_proc(y, y_pred, pred_th, alpha, n):
+    us = np.maximum(pred_th, -INF_BORN_INT)
     if us.max() <= 0:
-        return - (INF_BORN_INT + us) * (alpha - 1 / n)
-    integrals = torch.zeros(len(y), requires_grad=False)
-    for i in range(len(y)):
-        integrals[i] += _integrate_i(y[i], y_pred[i], us[i], alpha, n)
-    return integrals
-
-
-def J(y, y_pred, u, alpha):
-    n = len(y)
-    integral = _I_vec_multi_proc(y, y_pred, u, alpha, n)
-    return integral
-
-
-def J_prime(theta, y, y_pred, emb, alpha, n, reg=None, lambda_rg=None):
-    lambda_prime = emb
-    if reg == "ridge":
-        return np.mean(
-            lambda_prime * np.array(
-                _I_prime_list(y, y_pred, np.maximum(0, emb @ theta), alpha, n)
-            ).reshape(-1, 1) + lambda_rg * 2 * theta,
-            axis=0
-        )
-    elif reg == "lasso":
-        return np.mean(
-            lambda_prime * np.array(
-                _I_prime_list(y, y_pred, np.maximum(0, emb @ theta), alpha, n)
-            ).reshape(-1, 1) + lambda_rg * np.sign(theta),
-            axis=0
-        )
-    elif reg is None:
-        return np.mean(
-            lambda_prime * np.array(
-                _I_prime_list(y, y_pred, np.maximum(0, emb @ theta), alpha, n)
-            ).reshape(-1, 1),
-            axis=0
-        )
+        return np.zeros(len(y))
     else:
-        raise ValueError("reg must be 'ridge', 'lasso' or None")
+        integrals = []
+        for i in range(len(y)):
+            integrals.append(_integrate_i(y[i], y_pred[i], us[i], alpha, n))
+        return np.array(integrals)
+
+
+def J(y, y_pred, pred_th, alpha, n):
+    integral = _I_vec_multi_proc(y, y_pred, pred_th, alpha, n)
+    return np.sum(integral) / (n + 1) + (1 - alpha) / (n + 1)
