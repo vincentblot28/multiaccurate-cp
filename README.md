@@ -1,7 +1,7 @@
 Automatically Adaptive Conformal Prediction
 ===============
 
-This is the official repository of "Automatically Adaptive Conformal Prediction".
+This is the official repository of the paper "Automatically Adaptive Conformal Prediction"[https://arxiv.org/abs/2406.17819].
 
 ![teaser](teaser.png)
 
